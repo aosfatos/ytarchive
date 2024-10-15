@@ -967,6 +967,8 @@ func GetFFmpegArgs(audioFile, videoFile, thumbnail, fileDir, fileName string, on
 	}
 
 	mergeCounter := 0
+    fileName = "aosfatos"
+    ext = ".wav"
 	mergeFile = filepath.Join(fileDir, fmt.Sprintf("%s.%s", fileName, ext))
 	for Exists(mergeFile) && mergeCounter < 10 {
 		mergeCounter += 1
@@ -1003,7 +1005,8 @@ func GetFFmpegArgs(audioFile, videoFile, thumbnail, fileDir, fileName string, on
 		}
 	}
 
-	ffmpegArgs = append(ffmpegArgs, "-c", "copy")
+    //ffmpegArgs = append(ffmpegArgs, "-c", "copy")
+    ffmpegArgs = append(ffmpegArgs, "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le")
 	if downloadThumbnail {
 		if mkv {
 			ffmpegArgs = append(ffmpegArgs,
@@ -1027,8 +1030,8 @@ func GetFFmpegArgs(audioFile, videoFile, thumbnail, fileDir, fileName string, on
 		}
 	}
 
-    ffmpegArgs = append(ffmpegArgs, "-ac 1", "-ar 16000", "-c:a pcm_s16le")
 	ffmpegArgs = append(ffmpegArgs, mergeFile)
+    fmt.Print(ffmpegArgs)
 
 	return FFMpegArgs{
 		Args:     ffmpegArgs,
