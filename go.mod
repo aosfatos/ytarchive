@@ -1,4 +1,4 @@
-module github.com/Kethsar/ytarchive
+module github.com/aosfatos/ytarchive
 
 go 1.19
 
