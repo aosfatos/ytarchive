@@ -1027,6 +1027,7 @@ func GetFFmpegArgs(audioFile, videoFile, thumbnail, fileDir, fileName string, on
 		}
 	}
 
+    ffmpegArgs = append(ffmpegArgs, "-ac 1", "-ar 16000", "-c:a pcm_s16le")
 	ffmpegArgs = append(ffmpegArgs, mergeFile)
 
 	return FFMpegArgs{
