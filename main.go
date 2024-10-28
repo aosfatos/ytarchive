@@ -864,10 +864,8 @@ func run() int {
 	audioFFMpegArgs := GetFFmpegArgs(finalAudioFile, "", finalThumbnail, fdir, fname, true, false)
 	ffmpegCmd := fmt.Sprintf("%s %s", ffmpegPath, shellescape.QuoteCommand(ffmpegArgs.Args))
 
-    fmt.Print("####Log")
-    fmt.Print(ffmpegArgs)
-    fmt.Print(audioFFMpegArgs)
-    fmt.Print(ffmpegCmd)
+    LogWarn("####Log")
+    LogWarn(ffmpegCmd)
 
 	info.MDLInfo[DtypeAudio].BasePath = filepath.Join(tmpDir, afileName)
 	info.MDLInfo[DtypeVideo].BasePath = filepath.Join(tmpDir, vfileName)
@@ -942,7 +940,7 @@ func run() int {
 
 	maxSeq := -1
 	for {
-        fmt.Print("Progress...")
+        LogWarn("Progress...")
 		select {
 		case progress := <-progressChan:
 			info.DLState[progress.Itag].Size += int64(progress.ByteCount)
