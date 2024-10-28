@@ -866,6 +866,7 @@ func run() int {
 
     LogWarn("####Log")
     LogWarn(ffmpegCmd)
+    LogWarn(shellescape.QuoteCommand(audioFFMpegArgs.Args))
 
 	info.MDLInfo[DtypeAudio].BasePath = filepath.Join(tmpDir, afileName)
 	info.MDLInfo[DtypeVideo].BasePath = filepath.Join(tmpDir, vfileName)
