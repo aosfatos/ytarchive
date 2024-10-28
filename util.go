@@ -959,7 +959,7 @@ func GetFFmpegArgs(audioFile, videoFile, thumbnail, fileDir, fileName string, on
 	}
 
 	if onlyAudio {
-		ext = "m4a"
+		ext = "wav"
 	} else if mkv {
 		ext = "mkv"
 	} else {
@@ -1003,7 +1003,8 @@ func GetFFmpegArgs(audioFile, videoFile, thumbnail, fileDir, fileName string, on
 		}
 	}
 
-	ffmpegArgs = append(ffmpegArgs, "-c", "copy")
+	//ffmpegArgs = append(ffmpegArgs, "-c", "copy")
+    ffmpegArgs = append(ffmpegArgs, "-ac", "16000", "-ar", "1", "-c:a", "pcm_s16le")
 	if downloadThumbnail {
 		if mkv {
 			ffmpegArgs = append(ffmpegArgs,
