@@ -829,7 +829,7 @@ func run() int {
 		} else {
 			tmpDir = tempDir
 		}
-		tmpDir, err = os.MkdirTemp(tmpDir, fmt.Sprintf("%s__", info.VideoID))
+		tmpDir, err = os.MkdirTemp(tmpDir, fmt.Sprintf("%s", info.VideoID))
 		if err != nil {
 			LogWarn("Error creating temp directory: %s", err)
 			LogWarn("Will download data directly to %s instead", fdir)
