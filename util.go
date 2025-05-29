@@ -23,6 +23,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/alessio/shellescape"
@@ -105,6 +106,9 @@ var (
 	client *http.Client
 )
 
+var proxyIndex int
+var proxyMu sync.Mutex
+
 /*
 Logging functions;
 ansi sgr 0=reset, 1=bold, while 3x sets the foreground color:
@@ -179,6 +183,10 @@ func DialTLSContextOverride(ctx context.Context, network, addr string) (net.Conn
 }
 
 func InitializeHttpClient(proxyUrl *url.URL) {
+
+	if proxyUrl != nil {
+		LogGeneral("Initializing HTTP client with Proxy: %s", proxyUrl)
+	}
 	tr := http.DefaultTransport.(*http.Transport).Clone()
 
 	tr.DialContext = DialContextOverride
@@ -187,13 +195,26 @@ func InitializeHttpClient(proxyUrl *url.URL) {
 	tr.IdleConnTimeout = 45 * time.Second
 	tr.TLSHandshakeTimeout = 10 * time.Second
 	if proxyUrl != nil {
-		// Override ProxyFromEnvironment (default setting)
-		tr.Proxy = http.ProxyURL(proxyUrl)
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			LogGeneral(">> Request with proxy: '%s'", proxyUrl.String())
+			return http.ProxyURL(proxyUrl)(req)
+		}
 	}
 
 	client = &http.Client{
 		Transport: tr,
 	}
+}
+
+func getNextProxy() *url.URL {
+	if len(proxyUrls) == 0 {
+		return nil
+	}
+	proxyMu.Lock()
+	defer proxyMu.Unlock()
+	u := proxyUrls[proxyIndex%len(proxyUrls)]
+	proxyIndex++
+	return u
 }
 
 // Remove any illegal filename chars

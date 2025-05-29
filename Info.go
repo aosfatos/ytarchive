@@ -1035,6 +1035,8 @@ func (di *DownloadInfo) downloadFragment(state *fragThreadState, dataChan chan<-
 
 		if resp.StatusCode >= 400 {
 			HandleFragHttpError(di, state, resp.StatusCode, baseUrl)
+			LogGeneral("Request error: %d Rotating proxy...", resp.StatusCode)
+			InitializeHttpClient(getNextProxy())
 
 			state.Tries += 1
 			if !ContinueFragmentDownload(di, state) {
