@@ -982,6 +982,10 @@ func (di *DownloadInfo) downloadFragment(state *fragThreadState, dataChan chan<-
 		baseUrl := di.GetDownloadUrl(state.DataType)
 		seqUrl := fmt.Sprintf(baseUrl, state.SeqNum)
 
+		seqUrl = replacePotoken(seqUrl)
+
+		LogDebug("Fragment request %s", seqUrl)
+
 		req, err := http.NewRequest("GET", seqUrl, nil)
 		if err != nil {
 			LogDebug("%s: error creating request: %s", state.Name, err.Error())
@@ -1036,7 +1040,7 @@ func (di *DownloadInfo) downloadFragment(state *fragThreadState, dataChan chan<-
 		if resp.StatusCode >= 400 {
 			HandleFragHttpError(di, state, resp.StatusCode, baseUrl)
 			LogGeneral("Request error: %d Rotating proxy...", resp.StatusCode)
-			InitializeHttpClient(getNextProxy())
+			InitializeHttpClient(getNextProxyAndUpdatePOToken())
 
 			state.Tries += 1
 			if !ContinueFragmentDownload(di, state) {

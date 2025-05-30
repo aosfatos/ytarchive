@@ -34,6 +34,8 @@ var (
 	Commit string
 )
 
+var globalPOToken string
+
 func PrintVersion() {
 	if loglevel >= LoglevelError {
 		fmt.Fprintf(os.Stderr, "ytarchive %d.%d.%d%s\n", MajorVersion, MinorVersion, PatchVersion, Commit)
@@ -417,6 +419,7 @@ var (
 	startDelayStr     string
 	capDurationStr    string
 	poToken           string
+	poTokens          []string
 	proxyUrls         []*url.URL
 	threadCount       uint
 	fragMaxTries      uint
@@ -570,6 +573,7 @@ func init() {
 	})
 
 	cliFlags.Func("proxy", "Specify one or more proxies to use for downloading. Can be used multiple times.", func(s string) error {
+		proxyUrls = proxyUrls[:0]
 		for _, p := range strings.Split(s, ",") {
 			parsedUrl, err := url.Parse(p)
 			if err != nil {
@@ -579,12 +583,14 @@ func init() {
 			if parsedUrl.Scheme != "http" && parsedUrl.Scheme != "https" && parsedUrl.Scheme != "socks5" {
 				return errors.New("the proxy URL scheme must be http, https, or socks5")
 			}
-			parsedProxy, err := url.Parse(p)
-			if err != nil {
-				proxyUrls = append(proxyUrls, parsedProxy)
-			}
+			parsedProxy, _ := url.Parse(p)
+			proxyUrls = append(proxyUrls, parsedProxy)
 		}
 
+		return nil
+	})
+	cliFlags.Func("poTokens", "Specify list of potokens", func(s string) error {
+		poTokens = strings.Split(s, ",")
 		return nil
 	})
 }
@@ -599,7 +605,8 @@ func run() int {
 	var moveErrs []error
 
 	cliFlags.Parse(os.Args[1:])
-	InitializeHttpClient(getNextProxy())
+
+	InitializeHttpClient(getNextProxyAndUpdatePOToken())
 
 	info.VP9 = vp9
 	info.H264 = h264

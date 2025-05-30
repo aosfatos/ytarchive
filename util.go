@@ -106,8 +106,9 @@ var (
 	client *http.Client
 )
 
-var proxyIndex int
+var proxyIndex = 0
 var proxyMu sync.Mutex
+var potokenRegexp = regexp.MustCompile(`/pot/.*$`)
 
 /*
 Logging functions;
@@ -206,13 +207,20 @@ func InitializeHttpClient(proxyUrl *url.URL) {
 	}
 }
 
-func getNextProxy() *url.URL {
+func replacePotoken(url string) string {
+	return potokenRegexp.ReplaceAllString(url, fmt.Sprintf("/pot/%s", globalPOToken))
+}
+
+func getNextProxyAndUpdatePOToken() *url.URL {
 	if len(proxyUrls) == 0 {
 		return nil
 	}
 	proxyMu.Lock()
 	defer proxyMu.Unlock()
-	u := proxyUrls[proxyIndex%len(proxyUrls)]
+	index := proxyIndex % len(proxyUrls)
+	u := proxyUrls[index]
+	globalPOToken = poTokens[index]
+	LogDebug("Selected POTOKEN '%s'", globalPOToken)
 	proxyIndex++
 	return u
 }
@@ -526,8 +534,8 @@ func GetUrlsFromManifest(manifest []byte, poToken string) (map[int]string, int) 
 
 		if itag > 0 && len(r.BaseURL) > 0 {
 			formatUrl := strings.ReplaceAll(r.BaseURL, "%", "%%") + "sq/%d"
-			if len(poToken) > 0 {
-				formatUrl = fmt.Sprintf("%s/pot/%s", formatUrl, poToken)
+			if len(globalPOToken) > 0 {
+				formatUrl = fmt.Sprintf("%s/pot/%s", formatUrl, globalPOToken)
 			}
 			urls[itag] = formatUrl
 		}
